@@ -1,4 +1,4 @@
-Bootloader for ESP8266
+Firmware for ESP8266
 ======================
 
 License
