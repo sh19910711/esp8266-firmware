@@ -127,7 +127,7 @@ $(VERBOSE).SILENT:
 .SUFFIXES:
 .PHONY: build clean flash
 
-build: firmware.elf
+build: firmware.bin
 
 clean:
 	rm -f $(OBJS) firmware.bin firmware.elf firmware.map
