@@ -2,47 +2,34 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include "elf.h"
+#include "finfo.h"
 
 extern "C" {
 #include <user_interface.h>
 }
 
-
+const char* device_name = DEVICE_NAME;
 const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 
-typedef int berr_t;
-struct bootloader_args {
-    void (*hey)();
-    int (*read_adc)();
-    berr_t (*http_request)(const char *host, int port, const char *method,
-                           const char *path, const void *headers, const void *payload,
-                           size_t payload_size, void *buf, size_t buf_size);
-};
 
-void hey() {
-    Serial.println("hey from app!");
-    pinMode(4, OUTPUT);
-    digitalWrite(4, HIGH);
+void printchar(const char ch) {
+    Serial.print((char) ch);
 }
+
 
 int read_adc() {
         return system_adc_read();
 }
+
 
 void println(const char *str) {
 
     Serial.println(str);
 }
 
-enum {
-    BERR_OK = 1,
-    BERR_CONNECT = 2,
-    BERR_NOMEM = 3,
-};
 
-
-berr_t http_request(const char *host, int port, const char *method,
+ferr_t http_request(const char *host, int port, const char *method,
                     const char *path, const void *headers, const void *payload,
                     size_t payload_size, void *buf, size_t buf_size) {
 
@@ -67,6 +54,8 @@ berr_t http_request(const char *host, int port, const char *method,
         // TODO: implement timeout
     }
 
+    ESP.wdtFeed();
+
     uint8_t* p = (uint8_t *) buf;
     size_t size = buf_size;
     bool in_header = true;
@@ -77,8 +66,6 @@ berr_t http_request(const char *host, int port, const char *method,
         // TODO: support redirection
         if (in_header) {
             String l = client.readStringUntil('\n');
-            Serial.print("--> ");
-            Serial.println(l);
             if (l.equals("\r")) {
                 if (prev_is_blank) {
                     in_header = false;
@@ -87,53 +74,49 @@ berr_t http_request(const char *host, int port, const char *method,
                 prev_is_blank = true;
             }
         } else {
-            int num;
-            Serial.print("fetching");
+            size_t num;
             while ((num = client.read(p, size)) > 0) {
-                Serial.print("fetched ");
-                Serial.println(num);
-                p    += num;
-                size -= num;
-
-                if (size < 0) {
+                if (size < num) {
                     Serial.println("http: buffer is too short");
                     return BERR_NOMEM;
                 }
+
+                p    += num;
+                size -= num;
             }
         }
     }
 
-    int num;
-    Serial.println(num = client.read(p, size));
-    p    += num;
-    size -= num;
-    Serial.println(client.read(p, size));
     ESP.wdtFeed();
-    if (payload_size > 0)
-        return 0;
-
     return BERR_OK;
 }
 
 
+static struct firmware_info finfo;
 void do_update() {
-    char buf[1024];
-    size_t buf_size = sizeof(buf);
     String path("/devices/");
-    path.concat(DEVICE_NAME);
+    path.concat(device_name);
     path.concat("/image");
 
+    char *buf = (char *) 0x3fff4000;
+    size_t buf_size = 0x3500;
+
     http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
-                 "", "", 0, &buf, buf_size);
+                 "", "", 0, buf, buf_size);
 
-    struct bootloader_args bargs;
-    bargs.hey = hey;
-    bargs.http_request = http_request;
-    bargs.read_adc = read_adc;
+    finfo.printchar    = printchar;
+    finfo.read_adc     = read_adc;
+    finfo.http_request = http_request;
 
-    void (*app)(struct bootloader_args *);
-    app = (void (*)(struct bootloader_args *)) load_elf(&buf, nullptr);
-    app(&bargs);
+    ESP.wdtFeed();
+
+    void (*app)(struct firmware_info *);
+    app = (void (*)(struct firmware_info *)) load_elf(buf, nullptr);
+
+    ESP.wdtFeed();
+
+    Serial.println("firmware: starting the app");
+    app(&finfo);
     Serial.println("firmware: BUG: the app returned");
 }
 
