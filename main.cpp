@@ -138,7 +138,7 @@ void do_update() {
 }
 
 
-void setup() {
+extern "C" void boot() {
     Serial.begin(115200);
     Serial.println();
 

@@ -41,6 +41,7 @@ LINKFLAGS = $(COMMON) -nostdlib -Wl,--no-check-sections -u call_user_start \
     -Wl,-static -Lsdk/lib -Lsdk/ld -Tfirmware.lds -Wl,-Map=firmware.map
 
 OBJS = \
+    setup.S.o \
     main.cpp.o \
     elf.cpp.o \
     aligned_memcpy.cpp.o \
