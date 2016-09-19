@@ -134,7 +134,7 @@ clean:
 
 flash: firmware.bin
 	$(ESPTOOL) -vv -cd ck -cb 115200 -cp $(SERIAL) -ca 0x00000 -cf firmware.bin
-	./console.py /dev/ttyUSB0
+	./console.py $(SERIAL)
 
 
 firmware.bin: firmware.elf
