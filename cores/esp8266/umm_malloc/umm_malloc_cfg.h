@@ -66,7 +66,7 @@ extern "C" {
 /* Start addresses and the size of the heap */
 extern char _heap_start;
 #define UMM_MALLOC_CFG__HEAP_ADDR   ((uint32_t)&_heap_start)
-#define UMM_MALLOC_CFG__HEAP_SIZE   ((size_t)(0x3fffc000 - UMM_MALLOC_CFG__HEAP_ADDR))
+#define UMM_MALLOC_CFG__HEAP_SIZE   ((size_t)(0x3fff4000 - UMM_MALLOC_CFG__HEAP_ADDR))
 
 /* A couple of macros to make packing structures less compiler dependent */
 

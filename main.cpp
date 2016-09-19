@@ -98,8 +98,8 @@ void do_update() {
     path.concat(device_name);
     path.concat("/image");
 
-    char *buf = (char *) 0x3fff4000;
-    size_t buf_size = 0x3500;
+    char *buf = (char *) 0x3fff7000;
+    size_t buf_size = 0x5000;
 
     http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);
