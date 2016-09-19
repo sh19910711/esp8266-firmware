@@ -8,9 +8,13 @@ import time
 
 def read_handler():
     while True:
-        ch = s.read().decode('ascii')
-        print(ch, end='')
-        sys.stdout.flush()
+        try:
+            ch = s.read().decode('ascii')
+        except UnicodeDecodeError:
+            print("non-ascii character: ".format(hex(ch)))
+        else:
+            print(ch, end='')
+            sys.stdout.flush()
 
 
 def write_handler():
