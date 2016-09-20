@@ -14,6 +14,7 @@ const char* password = WIFI_PASSWORD;
 
 
 void printchar(const char ch) {
+    Serial.println("He's alive!");
     Serial.print((char) ch);
 }
 
@@ -29,12 +30,22 @@ void println(const char *str) {
 }
 
 
-ferr_t http_request(const char *host, int port, const char *method,
-                    const char *path, const void *headers, const void *payload,
-                    size_t payload_size, void *buf, size_t buf_size) {
+static ferr_t do_http_request(const char *host, int port, const char *method,
+                              const char *path, const void *headers, const void *payload,
+                              size_t payload_size, uint8_t **buf, size_t *buf_size,
+                              int *offset) {
 
-    Serial.print("http_request: starting a http request to ");
-    Serial.println(host);
+    if (*buf_size == 0)
+        return BERR_NOMEM;
+
+    Serial.print("http: ");
+    Serial.print(method);
+    Serial.print(" ");
+    Serial.print(host);
+    Serial.print(" ");
+    Serial.print(path);
+    Serial.print(" offset=");
+    Serial.println(*offset);
 
     WiFiClient client;
     if (!client.connect(host, port)) {
@@ -44,6 +55,7 @@ ferr_t http_request(const char *host, int port, const char *method,
 
     client.print(String(method) + " " + path + " HTTP/1.0\r\n" +
                  "Host: " + host + "\r\n" +
+                 "Range: bytes=" + String(*offset) + "-" + "\r\n" +
                  "Connection: close\r\n" +
                  "\r\n");
 
@@ -56,33 +68,32 @@ ferr_t http_request(const char *host, int port, const char *method,
 
     ESP.wdtFeed();
 
-    uint8_t* p = (uint8_t *) buf;
-    size_t size = buf_size;
     bool in_header = true;
-    bool prev_is_blank = true;
     while (client.available()) {
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
         if (in_header) {
             String l = client.readStringUntil('\n');
+            if (l.startsWith("X-End-Of-File:")) {
+                return BERR_EOF;
+            }
+            
             if (l.equals("\r")) {
-                if (prev_is_blank) {
-                    in_header = false;
-                    continue;
-                }
-                prev_is_blank = true;
+                in_header = false;
             }
         } else {
             size_t num;
-            while ((num = client.read(p, size)) > 0) {
-                if (size < num) {
+            while ((num = client.read(*buf, *buf_size)) > 0) {
+                Serial.println(num);
+                *offset += num;
+                if (*buf_size < num) {
                     Serial.println("http: buffer is too short");
                     return BERR_NOMEM;
                 }
 
-                p    += num;
-                size -= num;
+                *buf += num;
+                *buf_size -= num;
             }
         }
     }
@@ -91,6 +102,32 @@ ferr_t http_request(const char *host, int port, const char *method,
     return BERR_OK;
 }
 
+static ferr_t http_request(const char *host, int port, const char *method,
+                    const char *path, const void *headers, const void *payload,
+                    size_t payload_size, void *buf, size_t buf_size) {
+    
+
+    // XXX
+    int offset = 0;
+    while (buf_size > 0) {
+        ESP.wdtFeed();
+        ferr_t r = do_http_request(host, port, method, path, headers,
+                                   payload, payload_size,
+                                   (uint8_t **) &buf, &buf_size,
+                                   &offset);
+
+        switch (r) {
+        case BERR_EOF:
+            return BERR_OK;
+        case BERR_OK:
+            continue;
+        default:
+            return r;
+        }
+    }
+
+    return BERR_NOMEM;
+}
 
 static struct firmware_info finfo;
 void do_update() {
@@ -98,8 +135,8 @@ void do_update() {
     path.concat(device_name);
     path.concat("/image");
 
-    char *buf = (char *) 0x3fff7000;
-    size_t buf_size = 0x5000;
+    char *buf = (char *) 0x3fff9000;
+    size_t buf_size = 0x3000;
 
     http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);

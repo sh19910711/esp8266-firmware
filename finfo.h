@@ -3,9 +3,10 @@
 
 typedef int ferr_t;
 enum {
-    BERR_OK = 1,
-    BERR_CONNECT = 2,
-    BERR_NOMEM = 3,
+    BERR_OK       = 1,
+    BERR_CONNECT  = 2,
+    BERR_NOMEM    = 3,
+    BERR_EOF      = 4,
 };
 
 struct firmware_info {

@@ -161,9 +161,11 @@ SECTIONS
     *(COMMON)
     . = ALIGN (8);
     _bss_end = ABSOLUTE(.);
+    
     . = ALIGN (8);
     . = . + 0x1000;
     __stack = ABSOLUTE(.);
+
     _heap_start = ABSOLUTE(.);
 /*    _stack_sentry = ALIGN(0x8); */
   } >dram0_0_seg :dram0_0_bss_phdr
