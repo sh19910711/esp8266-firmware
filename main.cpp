@@ -14,7 +14,7 @@ const char* password = WIFI_PASSWORD;
 
 
 void printchar(const char ch) {
-    Serial.println("He's alive!");
+
     Serial.print((char) ch);
 }
 
