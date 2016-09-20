@@ -13,6 +13,14 @@ const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 
 
+void dprint(const char *msg, unsigned x) {
+
+    Serial.print(msg);
+    Serial.print(" 0x");
+    Serial.println(x, HEX);
+}
+
+
 void printchar(const char ch) {
 
     Serial.print((char) ch);
@@ -141,6 +149,7 @@ void do_update() {
     http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);
 
+    finfo.dprint       = dprint;
     finfo.printchar    = printchar;
     finfo.read_adc     = read_adc;
     finfo.http_request = http_request;

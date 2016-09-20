@@ -10,6 +10,7 @@ enum {
 };
 
 struct firmware_info {
+    void (*dprint)(const char *msg, unsigned x);
     void (*printchar)(const char ch);
     int (*read_adc)();
     ferr_t (*http_request)(const char *host, int port, const char *method,

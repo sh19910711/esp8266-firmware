@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import argparse
 import serial
@@ -7,13 +8,27 @@ import time
 
 
 def read_handler():
+    l = ""
+    booted = False
     while True:
         try:
-            ch = s.read().decode('ascii')
+            b = serial_port.read()
+            s = b.decode('ascii')
         except UnicodeDecodeError:
-            print("non-ascii character: ".format(hex(ch)))
+            pass
         else:
-            print(ch, end='')
+            if booted:
+                print(s, end='')
+            l += s
+            if "\n" in l:
+                if not booted and "firmware:" in l:
+                    print(l)
+                    booted = True
+                elif ">>>stack>>>" in l:
+                    print("*** stack dump!")
+                    os._exit(1) # FIXME
+                l = ""
+                
             sys.stdout.flush()
 
 
@@ -21,18 +36,18 @@ def write_handler():
     while True:
         l = sys.stdin.readline().strip()
         print("*** sending '{}'".format(l))
-        ch = s.write(l.encode('ascii'))
+        ch = serial_port.write(l.encode('ascii'))
 
 
 def main():
-    global s
+    global serial_port
 
     parser = argparse.ArgumentParser()
     parser.add_argument("tty")
     args = parser.parse_args()
 
     print("*** opening", args.tty)
-    s = serial.Serial(args.tty, 115200, timeout=1)
+    serial_port = serial.Serial(args.tty, 115200, timeout=1)
     print("*** listening", args.tty)
 
     threading.Thread(target=write_handler, daemon=True).start()
@@ -42,7 +57,7 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        s.close()
+        serial_port.close()
         sys.exit()
 
 
