@@ -12,6 +12,23 @@ const char* device_name = DEVICE_NAME;
 const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
 
+int gpio_read(int pin) {
+
+    return digitalRead(pin);
+}
+
+
+void gpio_write(int pin, int data) {
+
+    digitalWrite(pin, data);
+}
+
+
+void gpio_set_pin_mode(int pin, int mode) {
+
+    pinMode(pin, mode);
+}
+
 
 void dprint(const char *msg, unsigned x) {
 
@@ -152,6 +169,9 @@ void do_update() {
     finfo.dprint       = dprint;
     finfo.printchar    = printchar;
     finfo.read_adc     = read_adc;
+    finfo.gpio_read    = gpio_read;
+    finfo.gpio_write    = gpio_write;
+    finfo.gpio_set_pin_mode = gpio_set_pin_mode;
     finfo.http_request = http_request;
 
     ESP.wdtFeed();

@@ -13,6 +13,9 @@ struct firmware_info {
     void (*dprint)(const char *msg, unsigned x);
     void (*printchar)(const char ch);
     int (*read_adc)();
+    int (*gpio_read)(int pin);
+    void (*gpio_write)(int pin, int data);
+    void (*gpio_set_pin_mode)(int pin, int mode);
     ferr_t (*http_request)(const char *host, int port, const char *method,
                            const char *path, const void *headers, const void *payload,
                            size_t payload_size, void *buf, size_t buf_size);
