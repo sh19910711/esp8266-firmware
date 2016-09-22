@@ -8,27 +8,15 @@ import time
 
 
 def read_handler():
-    l = ""
-    booted = False
     while True:
         try:
             b = serial_port.read()
             s = b.decode('ascii')
         except UnicodeDecodeError:
+            print(repr(b), end='')
             pass
         else:
-            if booted:
-                print(s, end='')
-            l += s
-            if "\n" in l:
-                if not booted and "firmware:" in l:
-                    print(l)
-                    booted = True
-                elif ">>>stack>>>" in l:
-                    print("*** stack dump!")
-                    os._exit(1) # FIXME
-                l = ""
-                
+            print(s, end='')
             sys.stdout.flush()
 
 
