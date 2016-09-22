@@ -113,11 +113,11 @@ static void loop_wrapper() {
     static bool setup_done = false;
     preloop_update_frequency();
     if(!setup_done) {
+        setup_done = true; // do this here because setup() never returns
         setup();
 #ifdef DEBUG_ESP_PORT
         DEBUG_ESP_PORT.setDebugOutput(true);
 #endif
-        setup_done = true;
     }
     loop();
     run_scheduled_functions();

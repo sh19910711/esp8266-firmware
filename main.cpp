@@ -8,6 +8,10 @@ extern "C" {
 #include <user_interface.h>
 }
 
+extern "C" void reset_stack_and_goto(void (*func)());
+void set_loop(void (*func)());
+
+const char* board_name = "esp8266";
 const char* device_name = DEVICE_NAME;
 const char* ssid     = WIFI_SSID;
 const char* password = WIFI_PASSWORD;
@@ -112,7 +116,7 @@ static ferr_t do_http_request(const char *host, int port, const char *method,
             while ((num = client.read(*buf, *buf_size)) > 0) {
                 Serial.println(num);
                 *offset += num;
-                if (*buf_size < num) {
+                if (*buf_size == num) {
                     Serial.println("http: buffer is too short");
                     return BERR_NOMEM;
                 }
@@ -127,15 +131,27 @@ static ferr_t do_http_request(const char *host, int port, const char *method,
     return BERR_OK;
 }
 
-static ferr_t http_request(const char *host, int port, const char *method,
-                    const char *path, const void *headers, const void *payload,
-                    size_t payload_size, void *buf, size_t buf_size) {
-    
 
-    // XXX
+static ferr_t http_request(const char *host, int port, const char *method,
+                           const char *path, const void *headers, const void *payload,
+                           size_t payload_size, void *buf, size_t buf_size) {
+
     int offset = 0;
-    while (buf_size > 0) {
-        ESP.wdtFeed();
+    ferr_t r = do_http_request(host, port, method, path, headers,
+                               payload, payload_size,
+                              (uint8_t **) &buf, &buf_size,
+                               &offset);
+
+    return r;
+}
+
+
+static ferr_t xeof_http_request(const char *host, int port, const char *method,
+                                const char *path, const void *headers, const void *payload,
+                                size_t payload_size, void *buf, size_t buf_size) {
+
+    int offset = 0;
+    for (;;) {
         ferr_t r = do_http_request(host, port, method, path, headers,
                                    payload, payload_size,
                                    (uint8_t **) &buf, &buf_size,
@@ -151,8 +167,9 @@ static ferr_t http_request(const char *host, int port, const char *method,
         }
     }
 
-    return BERR_NOMEM;
+    // unreachable
 }
+
 
 static struct firmware_info finfo;
 void do_update() {
@@ -163,9 +180,10 @@ void do_update() {
     char *buf = (char *) 0x3fff9000;
     size_t buf_size = 0x3000;
 
-    http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
+    xeof_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);
 
+    finfo.set_loop     = set_loop;
     finfo.dprint       = dprint;
     finfo.printchar    = printchar;
     finfo.read_adc     = read_adc;
@@ -184,6 +202,70 @@ void do_update() {
     Serial.println("firmware: starting the app");
     app(&finfo);
     Serial.println("firmware: BUG: the app returned");
+
+    for (;;);
+}
+
+
+static int current_deployment_id = 0;
+void update_status() {
+
+retry:
+    String path("/devices/");
+    path.concat(device_name);
+    path.concat("/status");
+
+    path.concat("?board=");
+    path.concat(board_name);
+    path.concat("&status=");
+    if (current_deployment_id == 0) {
+        path.concat("ready");
+    } else {
+        path.concat("running");
+    }
+
+    char buf[64];
+    http_request(CODESTAND_HOST, CODESTAND_PORT, "PUT", path.c_str(),
+                 "", "", 0, &buf, sizeof(buf));
+
+    if (buf[0] != 'X') {
+        int latest = atol(buf);
+        if (current_deployment_id != latest) {
+            Serial.println("firmware: new deployment detected, updating...");
+            current_deployment_id = latest;
+            reset_stack_and_goto(do_update);
+        }
+    } else {
+        Serial.println("firmware: no deployments, retrying...");
+        delay(5000);
+        goto retry;
+    }
+}
+
+
+#include "Schedule.h"
+extern "C" void __yield();
+static void (*app_loop)() = nullptr;
+void set_loop(void (*func)()) {
+
+    Serial.println("we are in set_loop");
+    app_loop = func;
+
+    for (;;) {
+        Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        run_scheduled_functions();
+        __yield();
+        ESP.wdtFeed();
+        if (app_loop)
+            app_loop();
+
+        update_status();
+    }
+}
+
+
+void loop() {
+    // unused
 }
 
 
@@ -209,9 +291,5 @@ extern "C" void boot() {
     *((uint32_t *) 0x3ff00024) |= 0x10;
 
     Serial.println("firmware: downloading an app");
-    do_update();
-}
-
-
-void loop() {
+    update_status();
 }

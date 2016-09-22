@@ -1,12 +1,9 @@
-.globl setup
+.globl reset_stack_and_goto
 .extern boot, __stack
-setup:
+reset_stack_and_goto:
     j 1f
 .literal_position
 .align 4
 1:
     movi   sp, __stack
-    movi   a4, boot
-    callx0 a4
-    ret.n
-
+    jx     a2

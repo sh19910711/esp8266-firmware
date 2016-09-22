@@ -42,6 +42,7 @@ LINKFLAGS = $(COMMON) -nostdlib -Wl,--no-check-sections -u call_user_start \
 
 OBJS = \
     setup.S.o \
+    reset_stack_and_goto.S.o \
     main.cpp.o \
     elf.cpp.o \
     aligned_memcpy.cpp.o \
