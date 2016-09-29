@@ -58,7 +58,6 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         } else {
             size_t num;
             while ((num = client.read(*buf, *buf_size)) > 0) {
-                Serial.println(num);
                 *offset += num;
                 if (*buf_size == num) {
                     Serial.println("http: buffer is too short");
