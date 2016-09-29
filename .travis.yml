@@ -1,0 +1,26 @@
+notifications:
+  on_success: change
+  on_failure: change
+
+os: linux
+language: c++
+sudo: required
+
+services:
+- docker
+
+install:
+- docker build -t builder .
+
+script:
+- docker run builder /bin/cat /esp8266-firmware/firmware.bin > firmware.bin
+- strings firmware.bin | grep 'I am a Codestand firmware for ESP8266!'
+
+deploy:
+  provider: releases
+  api_key:
+    secure: E6kuKBbdMVM1Qihr9eOT1VYvuAyu6FC+Q3fuzZT3N7cwrCejsb9sWbSbdYIJqBww5WBSO6myN9VnGAzcSjjl87uCaY90FjIh1rlXqFNNcNWvrK+SdnWrwKtq22AlJgGi7rL9VA1+16OfG0KJzJNdwDlqPxMN0qbs4aBtM0O4+mSVzsgs/eDML/You2pUGiioD2nZe8/3dDoo4svqh1Qw2zDXbQMQBLvWDGoxwLuZDXC+okA7t6Zxpvasa9YR8lrPqK63oqRfDT+dSNpyD5kJBKtzYRAh0fG96QT1ynUGN0EFgF98vbw0Kn7AW5yOozNMxeX9Ia5BlltZyRxJiB7ijJDyeL++rnc/s+ljzcuqZVq6mumHhDhaf9hzkj2WGcY26afJgElbNr9/XGGuZgd4L/iXogIZzh09fu7L3g4Jzc1noV7p02/smzayvzkCFVOlxlkjWHud+D4ILQ+xiMj0GwzzbAVTyK18nyAWX15xrd1Ud5s4Xc9K0mKc9fl8ub/kX+uB886ss5a3H5eaSQlSp0NJKvS8zy4x3bJF4JmFGD+RpOJsycmvw0tMETXYuc4s0v+sGw5TouwCOUzoODrbwT1idCq3gvk2wuEH01AWhM1cJgf3fprMcrw9arsncYyB9yWypR9Tng82AHWHohb0pMObuWQtsPXF8bafIi9pdhQ=
+  file: firmware.bin
+  skip_cleanup: true
+  on:
+    tags: true
