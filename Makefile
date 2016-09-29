@@ -41,11 +41,15 @@ LINKFLAGS = $(COMMON) -nostdlib -Wl,--no-check-sections -u call_user_start \
     -Wl,-static -Lsdk/lib -Lsdk/ld -Tfirmware.lds -Wl,-Map=firmware.map
 
 OBJS = \
-    setup.S.o \
-    reset_stack_and_goto.S.o \
-    main.cpp.o \
-    elf.cpp.o \
-    aligned_memcpy.cpp.o \
+    src/setup.S.o \
+    src/reset_stack_and_goto.S.o \
+    src/main.cpp.o \
+    src/http.cpp.o \
+    src/loop.cpp.o \
+    src/update.cpp.o \
+    src/interface.cpp.o \
+    src/elf.cpp.o \
+    src/aligned_memcpy.cpp.o \
     cores/esp8266/cont.S.o \
     cores/esp8266/cont_util.c.o \
     cores/esp8266/core_esp8266_eboot_command.c.o \
