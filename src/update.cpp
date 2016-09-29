@@ -70,7 +70,7 @@ retry:
 
     if (buf[0] != 'X') {
         int latest = atol((const char *) &buf);
-        if (current_deployment_id == latest) {
+        if (current_deployment_id < latest) {
             Serial.print("firmware: new deployment detected, updating... (#");
             Serial.print(current_deployment_id);
             Serial.print(" -> #");
