@@ -81,7 +81,8 @@ retry:
         }
     } else {
         Serial.println("firmware: no deployments, retrying...");
-        delay(5000);
+        ESP.wdtFeed();
+        delay(3000);
         goto retry;
     }
 }
