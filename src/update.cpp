@@ -20,7 +20,8 @@ void do_update() {
     xeof_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);
 
-    finfo.set_loop     = set_loop;
+    finfo.start_loop   = start_loop;
+    finfo.set_interval = set_interval;
     finfo.dprint       = dprint;
     finfo.printchar    = printchar;
     finfo.read_adc     = read_adc;

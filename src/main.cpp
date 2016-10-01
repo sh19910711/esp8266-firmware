@@ -13,7 +13,7 @@ extern "C" void boot() {
     Serial.begin(115200);
     Serial.println();
 
-    Serial.print("I am a Codestand firmware for ESP8266!");
+    Serial.println("I am a Codestand firmware for ESP8266!");
     Serial.print("firmware: connecting to ");
     Serial.println(wifi_ssid);
 

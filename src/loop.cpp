@@ -2,26 +2,28 @@
 #include <ESP8266WiFi.h>
 #include <Schedule.h>
 #include "update.h"
+#include "loop.h"
 
 extern "C" {
 #include <user_interface.h>
 }
 
-extern "C" void __yield();
 
-static void (*app_loop)() = nullptr;
-void set_loop(void (*func)()) {
+struct timer timers;
 
-    app_loop = func;
+void set_interval(int ms, void (*callback)()) {
+
+    timers.callback = callback;
+}
+
+
+void start_loop() {
 
     for (;;) {
-        run_scheduled_functions();
-        __yield();
         ESP.wdtFeed();
-        if (app_loop)
-            app_loop();
-
+        timers.callback();
         update_status();
+        delay(GLOBAL_INTERVAL);
     }
 }
 
@@ -29,4 +31,3 @@ void set_loop(void (*func)()) {
 void loop() {
     // unused
 }
-

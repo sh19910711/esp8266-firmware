@@ -10,7 +10,8 @@ enum {
 };
 
 struct firmware_info {
-    void (*set_loop)(void (*func)());
+    void (*start_loop)();
+    void (*set_interval)(int ms, void (*callback)());
     void (*dprint)(const char *msg, unsigned x);
     void (*printchar)(const char ch);
     int (*read_adc)();
