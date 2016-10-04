@@ -17,6 +17,7 @@ extern "C" void boot() {
     Serial.print("firmware: connecting to ");
     Serial.println(wifi_ssid);
 
+    WiFi.mode(WIFI_STA);
     WiFi.begin(wifi_ssid, wifi_password);
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
