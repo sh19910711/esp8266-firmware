@@ -12,7 +12,7 @@ AR      = xtensa-lx106-elf-ar
 LINK    = xtensa-lx106-elf-gcc
 OBJCOPY = xtensa-lx106-elf-objcopy
 ESPTOOL = ./esptool-ck-0.4.9/esptool
-CMDECHO = printf "  \e[1;35m%s\t\t\e[0;33m%s\e[m\n"
+CMDECHO = printf "  \033[1;35m%s\t\t\033[0;33m%s\033[m\n"
 
 COMMON = \
     -Isdk/include \
