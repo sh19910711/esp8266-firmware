@@ -5,7 +5,7 @@
 
 
 const char *board_name  = "esp8266";
-const char *device_name = DEVICE_NAME;
+const char *device_rand_id = DEVICE_RAND_ID;
 const char *wifi_ssid   = WIFI_SSID;
 const char *wifi_password = WIFI_PASSWORD;
 

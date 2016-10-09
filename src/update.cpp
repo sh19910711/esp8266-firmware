@@ -13,7 +13,7 @@ static struct firmware_info finfo;
 
 void do_update() {
     String path("/devices/");
-    path.concat(device_name);
+    path.concat(device_rand_id);
     path.concat("/image?deployment_id=");
     path.concat(String(current_deployment_id));
 
@@ -54,7 +54,7 @@ retry:
     ESP.wdtFeed();
 
     String path("/devices/");
-    path.concat(device_name);
+    path.concat(device_rand_id);
     path.concat("/status");
 
     path.concat("?board=");
