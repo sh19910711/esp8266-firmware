@@ -8,14 +8,17 @@
 #include "interface.h"
 
 
+static int current_deployment_id = 0;
 static struct firmware_info finfo;
+
 void do_update() {
     String path("/devices/");
     path.concat(device_name);
-    path.concat("/image");
+    path.concat("/image?deployment_id=");
+    path.concat(String(current_deployment_id));
 
-    char *buf = (char *) 0x3fff9000;
-    size_t buf_size = 0x3000;
+    char *buf = (char *) 0x3fff9000; // XXX
+    size_t buf_size = 0x3000; // XXX
 
     xeof_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
                  "", "", 0, buf, buf_size);
@@ -45,7 +48,6 @@ void do_update() {
 }
 
 
-static int current_deployment_id = 0;
 void update_status() {
 
 retry:
