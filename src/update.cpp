@@ -12,7 +12,7 @@ static int current_deployment_id = 0;
 static struct firmware_info finfo;
 
 void do_update() {
-    String path("/devices/");
+    String path("/api/devices/");
     path.concat(device_rand_id);
     path.concat("/image?deployment_id=");
     path.concat(String(current_deployment_id));
@@ -53,12 +53,10 @@ void update_status() {
 retry:
     ESP.wdtFeed();
 
-    String path("/devices/");
+    String path("/api/devices/");
     path.concat(device_rand_id);
     path.concat("/status");
 
-    path.concat("?board=");
-    path.concat(board_name);
     path.concat("&status=");
     if (current_deployment_id == 0) {
         path.concat("ready");
