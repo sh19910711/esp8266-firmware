@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "Esp.h"
 #include "elf.h"
 #include "aligned_memcpy.h"
 
@@ -49,7 +50,11 @@ uintptr_t load_elf(const void *data, void* (*map)(void *dst, const void *src, si
             Serial.print((unsigned long) src, HEX);
             Serial.print(", size=0x");
             Serial.println((unsigned long) phdr->p_filesz, HEX);
-            aligned_memcpy(dst, src, size);
+
+            if ((uintptr_t) dst > 0x40200000)
+                ESP.flashWrite((uint32_t) dst - 0x40200000, src, size);
+            else
+                aligned_memcpy(dst, src, size);
         }
     }
 
