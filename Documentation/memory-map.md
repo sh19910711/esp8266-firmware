@@ -16,13 +16,15 @@ IRAM (0x40100000 - 0x40107fff)
 
 ```
 0x40100000 - 0x401059ff: firmware (32KB)
-0x40105a00 - 0x40107fff: Base OS (9.5KB)
+0x40105a00 - 0x40107fff: unused (9.5KB)
 ```
 
-IROM
-----
+SPI Flash
+---------
 
 ```
 0x40201010 - 0x4026b000: firmware (423KB)
+0x4026b000 - 0x40286fff: BaseOS + app (48KB)
+0x40287000 - 0x4027B000: SPIFFS (16KB)
 ```
 
