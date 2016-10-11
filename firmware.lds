@@ -12,7 +12,7 @@ MEMORY
   irom0_0_seg :                         org = 0x40201010, len = 0x69ff0
 }
 
-PROVIDE ( _SPIFFS_start = 0x4026B000 );
+PROVIDE ( _SPIFFS_start = 0x40287000 );
 PROVIDE ( _SPIFFS_end = 0x4027B000 );
 PROVIDE ( _SPIFFS_page = 0x100 );
 PROVIDE ( _SPIFFS_block = 0x1000 );
