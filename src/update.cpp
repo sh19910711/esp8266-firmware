@@ -55,9 +55,9 @@ retry:
 
     String path("/api/devices/");
     path.concat(device_rand_id);
-    path.concat("/status");
+    path.concat("/status?");
 
-    path.concat("&status=");
+    path.concat("status=");
     if (current_deployment_id == 0) {
         path.concat("ready");
     } else {
