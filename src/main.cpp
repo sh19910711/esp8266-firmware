@@ -4,7 +4,7 @@
 #include "consts.h"
 
 
-const char *device_rand_id = DEVICE_RAND_ID;
+const char *device_secret = DEVICE_SECRET;
 const char *wifi_ssid   = WIFI_SSID;
 const char *wifi_password = WIFI_PASSWORD;
 

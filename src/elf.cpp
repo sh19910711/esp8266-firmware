@@ -14,7 +14,7 @@ uintptr_t load_elf(int deployment_id) {
 
     ehdr = (Elf32_Ehdr *) data;
     String path("/api/devices/");
-    path.concat(device_rand_id);
+    path.concat(device_secret);
     path.concat("/image?deployment_id=");
     path.concat(String(deployment_id));
 

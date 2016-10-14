@@ -43,7 +43,7 @@ retry:
     ESP.wdtFeed();
 
     String path("/api/devices/");
-    path.concat(device_rand_id);
+    path.concat(device_secret);
     path.concat("/status?");
 
     path.concat("status=");
