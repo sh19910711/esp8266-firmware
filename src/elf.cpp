@@ -14,13 +14,13 @@ uintptr_t load_elf(int deployment_id) {
 
     ehdr = (Elf32_Ehdr *) data;
     String path("/api/devices/");
-    path.concat(device_secret);
+    path.concat(DEVICE_SECRET);
     path.concat("/image?deployment_id=");
     path.concat(String(deployment_id));
 
     int offset = 0;
     while (offset < 1024) { // XXX
-        do_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
+        do_http_request(CODESTAND_HOST, 80, "GET", path.c_str(),
                         "", "", 0, &data, &data_size, &offset);
     }
 
@@ -69,7 +69,7 @@ uintptr_t load_elf(int deployment_id) {
             data = (uint8_t *) 0x3fff9000 + 1024;
             data_size = 0x3000 - 1024;
             while (offset - phdr->p_offset < size) {
-                do_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
+                do_http_request(CODESTAND_HOST, 80, "GET", path.c_str(),
                                 "", "", 0, &data, &data_size, &offset);
 
                 data = (uint8_t *) 0x3fff9000 + 1024;

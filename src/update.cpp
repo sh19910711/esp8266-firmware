@@ -43,7 +43,7 @@ retry:
     ESP.wdtFeed();
 
     String path("/api/devices/");
-    path.concat(device_secret);
+    path.concat(DEVICE_SECRET);
     path.concat("/status?");
 
     path.concat("status=");
@@ -55,7 +55,7 @@ retry:
 
     char buf[64];
     memset(&buf, 0, sizeof(buf));
-    http_request(CODESTAND_HOST, CODESTAND_PORT, "PUT", path.c_str(),
+    http_request(CODESTAND_HOST, 80, "PUT", path.c_str(),
                  "", "", 0, &buf, sizeof(buf));
 
     if (buf[0] != 'X') {

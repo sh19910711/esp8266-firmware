@@ -3,10 +3,10 @@
 #include "update.h"
 #include "consts.h"
 
-
-const char *device_secret = DEVICE_SECRET;
-const char *wifi_ssid   = WIFI_SSID;
-const char *wifi_password = WIFI_PASSWORD;
+const char *CODESTAND_HOST = "__CODESTAND_MGMT_SERVER_HOSTNAME__REPLACE_ME__";
+const char *WIFI_SSID      = "__WIFI_SSID__REPLACE_ME__";
+const char *WIFI_PASSWORD  = "__WIFI_PASSWORD__REPLACE_ME__";
+const char *DEVICE_SECRET  = "__VERY_VERY_LONG_DEVICE_SECRET__REPLACE_ME__";
 
 extern "C" void boot() {
     Serial.begin(115200);
@@ -14,10 +14,10 @@ extern "C" void boot() {
 
     Serial.println("I am a Codestand firmware for ESP8266!");
     Serial.print("firmware: connecting to ");
-    Serial.println(wifi_ssid);
+    Serial.println(WIFI_SSID);
 
     WiFi.mode(WIFI_STA);
-    WiFi.begin(wifi_ssid, wifi_password);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       Serial.print(".");
