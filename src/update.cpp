@@ -12,17 +12,6 @@ static int current_deployment_id = 0;
 static struct firmware_info finfo;
 
 void do_update() {
-    String path("/api/devices/");
-    path.concat(device_rand_id);
-    path.concat("/image?deployment_id=");
-    path.concat(String(current_deployment_id));
-
-    char *buf = (char *) 0x3fff9000; // XXX
-    size_t buf_size = 0x3000; // XXX
-
-    xeof_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
-                 "", "", 0, buf, buf_size);
-
     finfo.start_loop   = start_loop;
     finfo.set_interval = set_interval;
     finfo.dprint       = dprint;
@@ -36,7 +25,7 @@ void do_update() {
     ESP.wdtFeed();
 
     void (*app)(struct firmware_info *);
-    app = (void (*)(struct firmware_info *)) load_elf(buf, nullptr);
+    app = (void (*)(struct firmware_info *)) load_elf(current_deployment_id);
 
     ESP.wdtFeed();
 

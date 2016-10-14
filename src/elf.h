@@ -66,6 +66,6 @@ typedef struct {
 /*
  *  functions
  */
-uintptr_t load_elf(const void *data, void* (*map)(void *dst, const void *src, size_t size));
+uintptr_t load_elf(int deployment_id);
 
 #endif

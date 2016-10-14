@@ -1,14 +1,30 @@
 #include <Arduino.h>
 #include "Esp.h"
+#include "consts.h"
 #include "elf.h"
+#include "http.h"
 #include "aligned_memcpy.h"
 
 // Returns 1 on success or 0 on failure.
-uintptr_t load_elf(const void *data, void* (*map)(void *dst, const void *src, size_t size)) {
+uintptr_t load_elf(int deployment_id) {
     Elf32_Ehdr *ehdr;
     Elf32_Phdr *phdr;
+    uint8_t *data = (uint8_t *) 0x3fff9000; // XXX
+    size_t data_size = 1024; // XXX
 
     ehdr = (Elf32_Ehdr *) data;
+    String path("/api/devices/");
+    path.concat(device_rand_id);
+    path.concat("/image?deployment_id=");
+    path.concat(String(deployment_id));
+
+    int offset = 0;
+    while (offset < 1024) { // XXX
+        do_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
+                        "", "", 0, &data, &data_size, &offset);
+    }
+
+    data = (uint8_t *) 0x3fff9000; // XXX
 
     Serial.println("elf: cheking elf magic");
     if (ehdr->e_ident[0] != EI_MAG0 || ehdr->e_ident[1] != EI_MAG1 ||
@@ -38,23 +54,30 @@ uintptr_t load_elf(const void *data, void* (*map)(void *dst, const void *src, si
 
     // load program headers
     for (int i=0; i < e_phnum && i < PHDR_MAX; i++) {
+        data = (uint8_t *) 0x3fff9000; // XXX
         phdr = (Elf32_Phdr *) ((uintptr_t)  data + e_phoff + (e_phentsize * i));
 
         if (phdr->p_type == PT_LOAD) {
             uint32_t *dst = (uint32_t *) phdr->p_vaddr;
-            uint32_t *src = (uint32_t *) ((uintptr_t) data + phdr->p_offset); // requires 32-bit aligned access
             uint32_t size = phdr->p_filesz;
             Serial.print("elf: loading to=0x");
             Serial.print((unsigned long) dst, HEX);
-            Serial.print(", from=0x");
-            Serial.print((unsigned long) src, HEX);
-            Serial.print(", size=0x");
-            Serial.println((unsigned long) phdr->p_filesz, HEX);
+            Serial.print(", size=");
+            Serial.println((unsigned long) size, DEC);
 
-            if ((uintptr_t) dst > 0x40200000)
-                ESP.flashWrite((uint32_t) dst - 0x40200000, src, size);
-            else
-                aligned_memcpy(dst, src, size);
+            offset = phdr->p_offset;
+            data = (uint8_t *) 0x3fff9000 + 1024;
+            data_size = 0x3000 - 1024;
+            while (offset - phdr->p_offset < size) {
+                do_http_request(CODESTAND_HOST, CODESTAND_PORT, "GET", path.c_str(),
+                                "", "", 0, &data, &data_size, &offset);
+
+                data = (uint8_t *) 0x3fff9000 + 1024;
+                if ((uintptr_t) dst > 0x40200000)
+                    ESP.flashWrite((uint32_t) dst - 0x40200000, (uint32_t *) data, size);
+                else
+                    aligned_memcpy(dst, data, size);
+            }
         }
     }
 

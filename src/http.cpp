@@ -3,6 +3,8 @@
 #include <WiFiClientSecure.h>
 #include "http.h"
 
+// TODO: refacoring
+
 ferr_t do_http_request(const char *host, int port, const char *method,
                        const char *path, const void *headers, const void *payload,
                        size_t payload_size, uint8_t **buf, size_t *buf_size,
@@ -28,7 +30,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
     client.print(String(method) + " " + path + " HTTP/1.0\r\n" +
                  "Host: " + host + "\r\n" +
-                 "Range: bytes=" + String(*offset) + "-" + "\r\n" +
+                 "Range: bytes=" + String(*offset) + "-" + String(*offset + *buf_size) + "\r\n" +
                  "Connection: close\r\n" +
                  "\r\n");
 
@@ -42,14 +44,15 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     ESP.wdtFeed();
 
     bool in_header = true;
-    while (client.available()) {
+    bool is_eof = false;
+    while (client.available() || client.connected()) {
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
         if (in_header) {
             String l = client.readStringUntil('\n');
             if (l.startsWith("X-End-Of-File:")) {
-                return BERR_EOF;
+                is_eof = true;
             }
 
             if (l.equals("\r")) {
@@ -71,7 +74,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     }
 
     ESP.wdtFeed();
-    return BERR_OK;
+    return (is_eof) ? BERR_EOF : BERR_OK;
 }
 
 
