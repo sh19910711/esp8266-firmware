@@ -37,14 +37,14 @@ void do_update() {
 }
 
 
-void update_status() {
+void send_heartbeat() {
 
 retry:
     ESP.wdtFeed();
 
     String path("/api/devices/");
     path.concat(DEVICE_SECRET);
-    path.concat("/status?");
+    path.concat("/heartbeat?");
 
     path.concat("status=");
     if (current_deployment_id == 0) {

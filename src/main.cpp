@@ -32,5 +32,5 @@ extern "C" void boot() {
     *((uint32_t *) 0x3ff00024) |= 0x10;
 
     Serial.println("firmware: downloading an app");
-    update_status();
+    send_heartbeat();
 }
