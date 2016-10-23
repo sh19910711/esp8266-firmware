@@ -11,8 +11,11 @@
 static int current_deployment_id = 0;
 static struct firmware_info finfo;
 
+void update(int deployment_id);
+
 void do_update() {
     finfo.start_loop   = start_loop;
+    finfo.update       = update;
     finfo.set_interval = set_interval;
     finfo.dprint       = dprint;
     finfo.printchar    = printchar;
@@ -34,6 +37,16 @@ void do_update() {
     Serial.println("firmware: BUG: the app returned");
 
     for (;;);
+}
+
+
+void update(int deployment_id) {
+
+    if (deployment_id > 0) {
+        current_deployment_id = deployment_id;
+    }
+
+    reset_stack_and_goto(do_update);
 }
 
 
@@ -66,8 +79,7 @@ retry:
             Serial.print(" -> #");
             Serial.print(latest);
             Serial.println(")\n");
-            current_deployment_id = latest;
-            reset_stack_and_goto(do_update);
+            update(latest);
         }
     } else {
         Serial.println("firmware: no deployments, retrying...");
