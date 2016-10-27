@@ -22,7 +22,6 @@ void start_loop() {
     for (;;) {
         ESP.wdtFeed();
         timers.callback();
-        send_heartbeat();
         delay(GLOBAL_INTERVAL);
     }
 }
