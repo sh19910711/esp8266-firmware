@@ -15,8 +15,7 @@ IRAM (0x40100000 - 0x40107fff)
 ------------------------------
 
 ```
-0x40100000 - 0x401059ff: firmware (32KB)
-0x40105a00 - 0x40107fff: unused (9.5KB)
+0x40100000 - 0x40107fff: firmware (32KB)
 ```
 
 SPI Flash
