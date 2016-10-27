@@ -11,6 +11,7 @@ const char *WIFI_PASSWORD  = "__WIFI_PASSWORD__REPLACE_ME__";
 const char *DEVICE_SECRET  = "__VERY_VERY_LONG_DEVICE_SECRET__REPLACE_ME__";
 int SERVER_PORT;
 bool SERVER_TLS;
+String SERVER_URL;
 
 extern "C" void boot() {
     Serial.begin(115200);
@@ -38,11 +39,13 @@ extern "C" void boot() {
 
     SERVER_TLS  = !(strcmp(SERVER_TLS_STR, "no") == 0);
     SERVER_PORT = atoi(SERVER_PORT_STR);
-    Serial.println("firmware: server is ");
-    Serial.print((SERVER_TLS)? "https://" : "http://");
-    Serial.print(SERVER_HOST);
-    Serial.print(":");
-    Serial.println(SERVER_PORT);
+     SERVER_URL += (SERVER_TLS)? "https://" : "http://";
+    SERVER_URL += SERVER_HOST;
+    SERVER_URL += ":";
+    SERVER_URL += SERVER_PORT;
+
+    Serial.print("firmware: server is ");
+    Serial.println(SERVER_URL);
 
     Serial.println("firmware: downloading an app");
     send_heartbeat();

@@ -24,6 +24,8 @@ void do_update() {
     finfo.gpio_write    = gpio_write;
     finfo.gpio_set_pin_mode = gpio_set_pin_mode;
     finfo.http_request = http_request;
+    finfo.get_device_secret = get_device_secret;
+    finfo.get_server_url = get_server_url;
 
     ESP.wdtFeed();
 

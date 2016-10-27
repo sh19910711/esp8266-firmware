@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "consts.h"
 
 extern "C" {
 #include <user_interface.h>
@@ -38,4 +39,16 @@ void printchar(const char ch) {
 
 int read_adc() {
         return system_adc_read();
+}
+
+
+const char *get_device_secret() {
+
+    return DEVICE_SECRET;
+}
+
+
+const char *get_server_url() {
+
+    return SERVER_URL.c_str();
 }
