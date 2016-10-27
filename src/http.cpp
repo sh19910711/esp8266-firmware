@@ -8,7 +8,7 @@
 ferr_t do_http_request(const char *host, int port, const char *method,
                        const char *path, const void *headers, const void *payload,
                        size_t payload_size, uint8_t **buf, size_t *buf_size,
-                       int *offset) {
+                       int *offset, bool tls) {
 
     if (*buf_size == 0)
         return BERR_NOMEM;
@@ -22,13 +22,19 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     Serial.print(" offset=");
     Serial.println(*offset);
 
-    WiFiClient client;
-    if (!client.connect(host, port)) {
+    WiFiClient *client;
+    if (tls) {
+        client = new WiFiClientSecure();
+    } else {
+        client = new WiFiClient();
+    }
+
+    if (!client->connect(host, port)) {
         Serial.println("error: failed to connect");
         return BERR_CONNECT;
     }
 
-    client.print(String(method) + " " + path + " HTTP/1.0\r\n" +
+    client->print(String(method) + " " + path + " HTTP/1.0\r\n" +
                  "Host: " + host + "\r\n" +
                  "Range: bytes=" + String(*offset) + "-" + String(*offset + *buf_size) + "\r\n" +
                  "Connection: close\r\n" +
@@ -36,7 +42,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
     // TODO: support headers and payload
 
-    while (!client.available()) {
+    while (!client->available()) {
         // connecting
         // TODO: implement timeout
     }
@@ -45,12 +51,12 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
     bool in_header = true;
     bool is_eof = false;
-    while (client.available() || client.connected()) {
+    while (client->available() || client->connected()) {
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
         if (in_header) {
-            String l = client.readStringUntil('\n');
+            String l = client->readStringUntil('\n');
             if (l.startsWith("X-End-Of-File:")) {
                 is_eof = true;
             }
@@ -60,7 +66,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
             }
         } else {
             size_t num;
-            while ((num = client.read(*buf, *buf_size)) > 0) {
+            while ((num = client->read(*buf, *buf_size)) > 0) {
                 *offset += num;
                 if (*buf_size == num) {
                     Serial.println("http: buffer is too short");
@@ -80,38 +86,13 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
 ferr_t http_request(const char *host, int port, const char *method,
                     const char *path, const void *headers, const void *payload,
-                    size_t payload_size, void *buf, size_t buf_size) {
+                    size_t payload_size, void *buf, size_t buf_size, bool tls) {
 
     int offset = 0;
     ferr_t r = do_http_request(host, port, method, path, headers,
                                payload, payload_size,
                               (uint8_t **) &buf, &buf_size,
-                               &offset);
+                               &offset, tls);
 
     return r;
-}
-
-
-ferr_t xeof_http_request(const char *host, int port, const char *method,
-                         const char *path, const void *headers, const void *payload,
-                         size_t payload_size, void *buf, size_t buf_size) {
-
-    int offset = 0;
-    for (;;) {
-        ferr_t r = do_http_request(host, port, method, path, headers,
-                                   payload, payload_size,
-                                   (uint8_t **) &buf, &buf_size,
-                                   &offset);
-
-        switch (r) {
-        case BERR_EOF:
-            return BERR_OK;
-        case BERR_OK:
-            continue;
-        default:
-            return r;
-        }
-    }
-
-    // unreachable
 }
