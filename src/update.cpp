@@ -8,10 +8,9 @@
 #include "interface.h"
 
 
-static int current_deployment_id = 0;
+static unsigned long current_deployment_id = 0;
+static unsigned long deployment_id_on_boot = 0;
 static struct firmware_info finfo;
-
-void update(int deployment_id);
 
 void do_update() {
     finfo.start_loop   = start_loop;
@@ -26,6 +25,7 @@ void do_update() {
     finfo.http_request = http_request;
     finfo.get_device_secret = get_device_secret;
     finfo.get_server_url = get_server_url;
+    finfo.get_deployment_id_on_boot = get_deployment_id_on_boot;
 
     ESP.wdtFeed();
 
@@ -42,19 +42,16 @@ void do_update() {
 }
 
 
-void update(int deployment_id) {
+void update(unsigned long deployment_id) {
 
-    if (deployment_id > 0) {
-        current_deployment_id = deployment_id;
-    }
-
+    current_deployment_id = deployment_id;
     reset_stack_and_goto(do_update);
 }
 
 
 void send_first_heartbeat() {
 
-retry:
+send:
     ESP.wdtFeed();
 
     String path("/api/devices/");
@@ -66,20 +63,30 @@ retry:
     http_request(SERVER_HOST, SERVER_PORT, "PUT", path.c_str(),
                  "", "", 0, &buf, sizeof(buf), SERVER_TLS);
 
-    if (buf[0] != 'X') {
-        int latest = atol((const char *) &buf);
-        if (current_deployment_id < latest) {
-            Serial.print("firmware: new deployment detected, updating... (#");
-            Serial.print(current_deployment_id);
-            Serial.print(" -> #");
-            Serial.print(latest);
-            Serial.println(")\n");
-            update(latest);
-        }
-    } else {
-        Serial.println("firmware: no deployments, retrying...");
-        ESP.wdtFeed();
-        delay(3000);
+    if (buf[0] == 'X') {
+        Serial.println("firmware: no deployments");
         goto retry;
     }
+
+    deployment_id_on_boot = atol((const char *) &buf);
+    if (deployment_id_on_boot == 0) {
+        Serial.println("firmware: server sent invalid heartbeat response");
+        goto retry;
+    }
+
+    Serial.print("firmware: starting deplyoment id #");
+    Serial.println(deployment_id_on_boot);
+    update(deployment_id_on_boot);
+
+retry:
+    Serial.print("firmware: retrying in few seconds...");
+    ESP.wdtFeed();
+    delay(3000);
+    goto send;
+}
+
+
+unsigned long get_deployment_id_on_boot() {
+
+    return deployment_id_on_boot;
 }

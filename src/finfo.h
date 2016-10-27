@@ -11,7 +11,7 @@ enum {
 
 struct firmware_info {
     void (*start_loop)();
-    void (*update)(int deployment_id);
+    void (*update)(unsigned long deployment_id);
     void (*set_interval)(int ms, void (*callback)());
     void (*dprint)(const char *msg, unsigned x);
     void (*printchar)(const char ch);
@@ -24,6 +24,7 @@ struct firmware_info {
                            size_t payload_size, void *buf, size_t buf_size, bool tls);
     const char *(*get_device_secret)(void);
     const char *(*get_server_url)(void);
+    unsigned long (*get_deployment_id_on_boot)(void);
 };
 
 
