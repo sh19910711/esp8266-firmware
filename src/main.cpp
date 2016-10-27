@@ -3,10 +3,14 @@
 #include "update.h"
 #include "consts.h"
 
-const char *CODESTAND_HOST = "__CODESTAND_MGMT_SERVER_HOSTNAME__REPLACE_ME__";
+const char *SERVER_HOST     = "__VERY_VERY_LONG_SERVER_HOST_NAME__REPLACE_ME__";
+const char *SERVER_PORT_STR = "__PORT__REPLACE_ME__";
+const char *SERVER_TLS_STR  = "__TLS__REPLACE_ME__";
 const char *WIFI_SSID      = "__WIFI_SSID__REPLACE_ME__";
 const char *WIFI_PASSWORD  = "__WIFI_PASSWORD__REPLACE_ME__";
 const char *DEVICE_SECRET  = "__VERY_VERY_LONG_DEVICE_SECRET__REPLACE_ME__";
+int SERVER_PORT;
+bool SERVER_TLS;
 
 extern "C" void boot() {
     Serial.begin(115200);
@@ -28,8 +32,17 @@ extern "C" void boot() {
     Serial.print("firmware: my IP address is ");
     Serial.println(WiFi.localIP());
 
+    // TODO: we don't need this, probably
     Serial.println("firmware: activating IRAM from 0x40108000");
     *((uint32_t *) 0x3ff00024) |= 0x10;
+
+    SERVER_TLS  = !(strcmp(SERVER_TLS_STR, "no") == 0);
+    SERVER_PORT = atoi(SERVER_PORT_STR);
+    Serial.println("firmware: server is ");
+    Serial.print((SERVER_TLS)? "https://" : "http://");
+    Serial.print(SERVER_HOST);
+    Serial.print(":");
+    Serial.println(SERVER_PORT);
 
     Serial.println("firmware: downloading an app");
     send_heartbeat();

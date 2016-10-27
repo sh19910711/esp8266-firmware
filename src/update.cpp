@@ -68,8 +68,8 @@ retry:
 
     char buf[64];
     memset(&buf, 0, sizeof(buf));
-    http_request(CODESTAND_HOST, 80, "PUT", path.c_str(),
-                 "", "", 0, &buf, sizeof(buf));
+    http_request(SERVER_HOST, SERVER_PORT, "PUT", path.c_str(),
+                 "", "", 0, &buf, sizeof(buf), SERVER_TLS);
 
     if (buf[0] != 'X') {
         int latest = atol((const char *) &buf);

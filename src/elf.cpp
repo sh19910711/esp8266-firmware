@@ -20,8 +20,8 @@ uintptr_t load_elf(int deployment_id) {
 
     int offset = 0;
     while (offset < 1024) { // XXX
-        do_http_request(CODESTAND_HOST, 80, "GET", path.c_str(),
-                        "", "", 0, &data, &data_size, &offset);
+        do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
+                        "", "", 0, &data, &data_size, &offset, SERVER_TLS);
     }
 
     data = (uint8_t *) 0x3fff9000; // XXX
@@ -69,8 +69,9 @@ uintptr_t load_elf(int deployment_id) {
             data = (uint8_t *) 0x3fff9000 + 1024;
             data_size = 0x3000 - 1024;
             while (offset - phdr->p_offset < size) {
-                do_http_request(CODESTAND_HOST, 80, "GET", path.c_str(),
-                                "", "", 0, &data, &data_size, &offset);
+                do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
+                                "", "", 0, &data, &data_size, &offset,
+                                SERVER_TLS);
 
                 data = (uint8_t *) 0x3fff9000 + 1024;
                 if ((uintptr_t) dst > 0x40200000)
