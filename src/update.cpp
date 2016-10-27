@@ -52,7 +52,7 @@ void update(int deployment_id) {
 }
 
 
-void send_heartbeat() {
+void send_first_heartbeat() {
 
 retry:
     ESP.wdtFeed();

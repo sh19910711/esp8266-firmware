@@ -48,5 +48,5 @@ extern "C" void boot() {
     Serial.println(SERVER_URL);
 
     Serial.println("firmware: downloading an app");
-    send_heartbeat();
+    send_first_hearbeat();
 }
