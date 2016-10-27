@@ -59,14 +59,7 @@ retry:
 
     String path("/api/devices/");
     path.concat(DEVICE_SECRET);
-    path.concat("/heartbeat?");
-
-    path.concat("status=");
-    if (current_deployment_id == 0) {
-        path.concat("ready");
-    } else {
-        path.concat("running");
-    }
+    path.concat("/heartbeat?status=ready");
 
     char buf[64];
     memset(&buf, 0, sizeof(buf));
