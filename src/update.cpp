@@ -79,7 +79,7 @@ send:
     update(deployment_id_on_boot);
 
 retry:
-    Serial.print("firmware: retrying in few seconds...");
+    Serial.println("firmware: retrying in few seconds...");
     ESP.wdtFeed();
     delay(3000);
     goto send;
