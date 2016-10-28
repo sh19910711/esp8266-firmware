@@ -51,17 +51,12 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     ESP.wdtFeed();
 
     bool in_header = true;
-    bool is_eof = false;
     while (client->available() || client->connected()) {
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
         if (in_header) {
             String l = client->readStringUntil('\n');
-            if (l.startsWith("X-End-Of-File:")) {
-                is_eof = true;
-            }
-
             if (l.equals("\r")) {
                 in_header = false;
             }
@@ -81,7 +76,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     }
 
     ESP.wdtFeed();
-    return (is_eof) ? BERR_EOF : BERR_OK;
+    return BERR_OK;
 }
 
 
