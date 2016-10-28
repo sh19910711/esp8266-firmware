@@ -17,7 +17,8 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     Serial.print(method);
     Serial.print(" ");
     Serial.print(host);
-    Serial.print(" ");
+    Serial.print(":");
+    Serial.print(port, DEC);
     Serial.print(path);
     Serial.print(" offset=");
     Serial.println(*offset);
