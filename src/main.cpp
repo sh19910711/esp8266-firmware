@@ -2,6 +2,8 @@
 #include <ESP8266WiFi.h>
 #include "update.h"
 #include "consts.h"
+#include "loop.h"
+
 
 const char *SERVER_HOST     = "__VERY_VERY_LONG_SERVER_HOST_NAME__REPLACE_ME__";
 const char *SERVER_PORT_STR = "__PORT__REPLACE_ME__";
@@ -36,6 +38,8 @@ extern "C" void boot() {
     // TODO: we don't need this, probably
     Serial.println("firmware: activating IRAM from 0x40108000");
     *((uint32_t *) 0x3ff00024) |= 0x10;
+
+    init_timers();
 
     SERVER_TLS  = !(strcmp(SERVER_TLS_STR, "no") == 0);
     SERVER_PORT = atoi(SERVER_PORT_STR);
