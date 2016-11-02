@@ -7,8 +7,8 @@ DRAM (0x3ffe8000 - 3fffbfff)
 ```
 0x3ffe8000 - 0x3fff3fff: firmware (48KB)
 0x3fff4000 - 0x3fff6fff: firmware heap (12KB)
-0x3fff7000 - 0x3fff8fff: Base OS (8KB)
-0x3fff9000 - 0x3fffbfff: Base OS / used in do_update() (12KB)
+0x3fff7000 - 0x3fff8fff: Base OS / load_elf in firmware (8KB)
+0x3fff9000 - 0x3fffbfff: Base OS (12KB)
 ```
 
 IRAM (0x40100000 - 0x40107fff)
