@@ -35,9 +35,10 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         return BERR_CONNECT;
     }
 
+    uintptr_t offset_end = *offset + *buf_size - 1;
     client->print(String(method) + " " + path + " HTTP/1.0\r\n" +
                  "Host: " + host + "\r\n" +
-                 "Range: bytes=" + String(*offset) + "-" + String(*offset + *buf_size) + "\r\n" +
+                 "Range: bytes=" + String(*offset) + "-" + String(offset_end) + "\r\n" +
                  "Connection: close\r\n" +
                  "\r\n");
 
@@ -64,7 +65,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
             size_t num;
             while ((num = client->read(*buf, *buf_size)) > 0) {
                 *offset += num;
-                if (*buf_size == num) {
+                if (offset_end > (uintptr_t) *offset && *buf_size == num) {
                     Serial.println("http: buffer is too short");
                     return BERR_NOMEM;
                 }

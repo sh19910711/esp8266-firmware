@@ -9,7 +9,7 @@
 uintptr_t load_elf(int deployment_id) {
     Elf32_Ehdr *ehdr;
     Elf32_Phdr *phdr;
-    uint8_t *data = (uint8_t *) 0x3fff9000; // XXX
+    uint8_t *data = (uint8_t *) 0x3fff7000; // XXX
     size_t data_size = 1024; // XXX
 
     ehdr = (Elf32_Ehdr *) data;
@@ -19,12 +19,12 @@ uintptr_t load_elf(int deployment_id) {
     path.concat(String(deployment_id));
 
     int offset = 0;
-    while (offset < 1024) { // XXX
+    while (offset < 0x70) { // XXX
         do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
                         "", "", 0, &data, &data_size, &offset, SERVER_TLS);
     }
 
-    data = (uint8_t *) 0x3fff9000; // XXX
+    data = (uint8_t *) 0x3fff7000; // XXX
 
     Serial.println("elf: cheking elf magic");
     if (ehdr->e_ident[0] != EI_MAG0 || ehdr->e_ident[1] != EI_MAG1 ||
@@ -54,7 +54,7 @@ uintptr_t load_elf(int deployment_id) {
 
     // load program headers
     for (int i=0; i < e_phnum && i < PHDR_MAX; i++) {
-        data = (uint8_t *) 0x3fff9000; // XXX
+        data = (uint8_t *) 0x3fff7000; // XXX
         phdr = (Elf32_Phdr *) ((uintptr_t)  data + e_phoff + (e_phentsize * i));
 
         if (phdr->p_type == PT_LOAD) {
@@ -66,18 +66,55 @@ uintptr_t load_elf(int deployment_id) {
             Serial.println((unsigned long) size, DEC);
 
             offset = phdr->p_offset;
-            data = (uint8_t *) 0x3fff9000 + 1024;
-            data_size = 0x3000 - 1024;
+            data = (uint8_t *) 0x3fff7000 + 1024;
+            size_t data_max_size = 0x2000 - 1024;
+            // TODO: limit # of http requests
+            bool received_all = false;
             while (offset - phdr->p_offset < size) {
+                if (received_all) {
+                    Serial.println("firmware: error: server returned incomplete data");
+                    return 0; // TODO: reset here
+                }
+
+                size_t prev_offset = offset;
+                // data_size = data_max_size;
+                data = (uint8_t *) 0x3fff7000 + 1024;
+                data_size = 5000;
                 do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
                                 "", "", 0, &data, &data_size, &offset,
                                 SERVER_TLS);
 
-                data = (uint8_t *) 0x3fff9000 + 1024;
-                if ((uintptr_t) dst > 0x40200000)
-                    ESP.flashWrite((uint32_t) dst - 0x40200000, (uint32_t *) data, size);
-                else
-                    aligned_memcpy(dst, data, size);
+                data = (uint8_t *) 0x3fff7000 + 1024;
+                size_t copy_size = offset - prev_offset;
+                const int SPIFLASH_ADDR = 0x40200000;
+                const int SPIFLASH_SECTOR_SIZE = 4096;
+                if ((uintptr_t) dst >= SPIFLASH_ADDR) {
+                    size_t sectors = copy_size / SPIFLASH_SECTOR_SIZE;
+                    if (sectors == 0) {
+                        sectors = 1;
+                        received_all = true;
+                    }
+
+                    for (size_t i = 0; i < sectors; i++) {
+                        uint32_t flash_sector = (((uint32_t) dst - SPIFLASH_ADDR) / SPIFLASH_SECTOR_SIZE) + i;
+                        uint32_t flash_offset = flash_sector * SPIFLASH_SECTOR_SIZE;
+                        uint32_t *src = (uint32_t *) ((uint32_t) data + i * SPIFLASH_SECTOR_SIZE);
+
+                        if (!ESP.flashEraseSector(flash_sector))
+                            Serial.println("firmware: failed to flashEraseSector");
+
+                        if (!ESP.flashWrite(flash_offset, src, SPIFLASH_SECTOR_SIZE))
+                            Serial.println("firmware: failed to ESP.flashWrite");
+                    }
+
+                    ESP.wdtFeed();
+                    delay(500);
+                    offset = prev_offset + sectors * SPIFLASH_SECTOR_SIZE;
+                } else {
+                    aligned_memcpy(dst, data, copy_size);
+                }
+
+                dst = (uint32_t *) ((uintptr_t) dst + copy_size);
             }
         }
     }
