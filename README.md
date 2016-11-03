@@ -1,6 +1,6 @@
 Firmware for ESP8266
 ======================
-[![Build Status](https://travis-ci.org/codestand/esp8266-firmware.svg?branch=master)](https://travis-ci.org/codestand/esp8266-firmware)
+[![Build Status](https://travis-ci.org/makestack/esp8266-firmware.svg?branch=master)](https://travis-ci.org/makestack/esp8266-firmware)
 
 License
 -------

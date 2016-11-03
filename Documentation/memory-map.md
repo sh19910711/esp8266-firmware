@@ -23,7 +23,7 @@ SPI Flash
 
 ```
 0x40201010 - 0x4026b000: firmware (423KB)
-0x4026b000 - 0x40286fff: BaseOS + app (48KB)
+0x4026b000 - 0x40286fff: DeviceOS + app (48KB)
 0x40287000 - 0x4027B000: SPIFFS (16KB)
 ```
 
