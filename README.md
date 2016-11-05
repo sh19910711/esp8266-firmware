@@ -1,6 +1,7 @@
 Firmware for ESP8266
 ======================
 [![Build Status](https://travis-ci.org/makestack/esp8266-firmware.svg?branch=master)](https://travis-ci.org/makestack/esp8266-firmware)
+[![Code Climate](https://codeclimate.com/github/makestack/esp8266-firmware/badges/gpa.svg)](https://codeclimate.com/github/makestack/esp8266-firmware)
 
 License
 -------
