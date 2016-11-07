@@ -14,7 +14,7 @@ install:
 
 script:
 - docker run builder /bin/cat /esp8266-firmware/firmware.bin > firmware.bin
-- strings firmware.bin | grep 'I am a Codestand firmware for ESP8266!'
+- strings firmware.bin | grep 'firmware: Hello!'
 
 deploy:
   provider: releases
