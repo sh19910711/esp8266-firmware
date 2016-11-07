@@ -14,7 +14,7 @@ install:
 
 script:
 - docker run builder /bin/cat /esp8266-firmware/firmware.bin > firmware.bin
-- strings firmware.bin | grep 'firmware: Hello!'
+- "strings firmware.bin | grep 'firmware: Hello!'"
 
 deploy:
   provider: releases
