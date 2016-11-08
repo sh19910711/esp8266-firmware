@@ -33,13 +33,11 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         client = new WiFiClient();
     }
 
-    Serial.print("connecting....!");
     ESP.wdtFeed();
     if (!client->connect(host, port)) {
         Serial.println("error: failed to connect");
         return BERR_CONNECT;
     }
-    Serial.print("con!con!con!");
 
     client->print(String(method) + " " + path + " HTTP/1.0\r\n" +
                   "Host: " + host + "\r\n" +
@@ -62,19 +60,16 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     client->print((const char *) headers);
     client->print("\r\n");
     client->write((const char *) payload, payload_size);
-    Serial.println("sent to buffer");
 
     while (!client->available()) {
         // connecting
         // TODO: implement timeout
     }
 
-    Serial.println("available");
     ESP.wdtFeed();
 
     bool in_header = true;
     while (client->available() || client->connected()) {
-    Serial.println("connected");
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
