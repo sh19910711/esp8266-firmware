@@ -7,7 +7,7 @@
 MEMORY
 {
   dport0_0_seg :                        org = 0x3FF00000, len = 0x10
-  dram0_0_seg :                         org = 0x3FFE8000, len = 0xc000
+  dram0_0_seg :                         org = 0x3FFE8000, len = 0xb300
   iram1_0_seg :                         org = 0x40100000, len = 0x8000
   irom0_0_seg :                         org = 0x40201010, len = 0x69ff0
 }
@@ -161,9 +161,9 @@ SECTIONS
     *(COMMON)
     . = ALIGN (8);
     _bss_end = ABSOLUTE(.);
-    
+
     . = ALIGN (8);
-    . = . + 0x1000;
+    . = . + 0x800;
     __stack = ABSOLUTE(.);
 
     _heap_start = ABSOLUTE(.);
