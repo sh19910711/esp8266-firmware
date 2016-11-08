@@ -13,15 +13,18 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     if (*buf_size == 0)
         return BERR_NOMEM;
 
-    Serial.print("http: ");
+    Serial.print((tls) ? "https: " : "http: ");
     Serial.print(method);
     Serial.print(" ");
     Serial.print(host);
     Serial.print(":");
     Serial.print(port, DEC);
     Serial.print(path);
-    Serial.print(" offset=");
-    Serial.println(*offset);
+
+    if (offset) {
+        Serial.print(" offset=");
+        Serial.println(*offset);
+    }
 
     WiFiClient *client;
     if (tls) {
@@ -30,29 +33,48 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         client = new WiFiClient();
     }
 
+    Serial.print("connecting....!");
+    ESP.wdtFeed();
     if (!client->connect(host, port)) {
         Serial.println("error: failed to connect");
         return BERR_CONNECT;
     }
+    Serial.print("con!con!con!");
 
-    uintptr_t offset_end = *offset + *buf_size - 1;
     client->print(String(method) + " " + path + " HTTP/1.0\r\n" +
-                 "Host: " + host + "\r\n" +
-                 "Range: bytes=" + String(*offset) + "-" + String(offset_end) + "\r\n" +
-                 "Connection: close\r\n" +
-                 "\r\n");
+                  "Host: " + host + "\r\n" +
+                  "Connection: close\r\n");
 
-    // TODO: support headers and payload
+    if (payload_size > 0)
+        client->print("Content-Length:" + String(payload_size) + "\r\n");
+
+    int offset_tmp = 0;
+    uintptr_t offset_end;
+    if (offset) {
+        offset_end = *offset + *buf_size - 1;
+        client->print("Range: bytes=" + String(*offset) + "-" + String(offset_end) + "\r\n");
+    } else {
+        offset_end = *buf_size - 1;
+        offset = &offset_tmp;
+    }
+
+
+    client->print((const char *) headers);
+    client->print("\r\n");
+    client->write((const char *) payload, payload_size);
+    Serial.println("sent to buffer");
 
     while (!client->available()) {
         // connecting
         // TODO: implement timeout
     }
 
+    Serial.println("available");
     ESP.wdtFeed();
 
     bool in_header = true;
     while (client->available() || client->connected()) {
+    Serial.println("connected");
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
@@ -85,11 +107,10 @@ ferr_t http_request(const char *host, int port, const char *method,
                     const char *path, const void *headers, const void *payload,
                     size_t payload_size, void *buf, size_t buf_size, bool tls) {
 
-    int offset = 0;
     ferr_t r = do_http_request(host, port, method, path, headers,
                                payload, payload_size,
                               (uint8_t **) &buf, &buf_size,
-                               &offset, tls);
+                               nullptr, tls);
 
     return r;
 }
