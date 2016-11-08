@@ -1452,6 +1452,8 @@ static void *_umm_malloc( size_t size ) {
 
     /* Release the critical section... */
     UMM_CRITICAL_EXIT();
+    printf("malloc: failed to allocate %d bytes\n", size);
+    printf("malloc: remaining %d bytes\n", system_get_free_heap_size());
 
     return( (void *)NULL );
   }
