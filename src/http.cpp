@@ -14,17 +14,16 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         return BERR_NOMEM;
 
     Serial.print((tls) ? "https: " : "http: ");
+    if (offset) {
+        Serial.print(" offset=");
+        Serial.print(*offset);
+    }
     Serial.print(method);
     Serial.print(" ");
     Serial.print(host);
     Serial.print(":");
     Serial.print(port, DEC);
-    Serial.print(path);
-
-    if (offset) {
-        Serial.print(" offset=");
-        Serial.println(*offset);
-    }
+    Serial.println(path);
 
     WiFiClient *client;
     if (tls) {
@@ -68,28 +67,32 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
     ESP.wdtFeed();
 
-    bool in_header = true;
+    size_t content_length = 0;
     while (client->available() || client->connected()) {
         // connected
         // TODO: support Content-Length
         // TODO: support redirection
-        if (in_header) {
-            String l = client->readStringUntil('\n');
-            if (l.equals("\r")) {
-                in_header = false;
-            }
-        } else {
-            size_t num;
-            while ((num = client->read(*buf, *buf_size)) > 0) {
-                *offset += num;
-                if (offset_end > (uintptr_t) *offset && *buf_size == num) {
-                    Serial.println("http: buffer is too short");
-                    return BERR_NOMEM;
-                }
+        String l = client->readStringUntil('\n');
+        if (l.equals("\r"))
+            break;
 
-                *buf += num;
-                *buf_size -= num;
+        if (l.startsWith("Content-Length:")) {
+            content_length = atol(l.c_str() + l.indexOf(' ') + 1);
+        }
+    }
+
+    while ((client->available() || client->connected()) && content_length > 0) {
+        size_t num;
+        while ((num = client->read(*buf, *buf_size)) > 0) {
+            *offset += num;
+            if (offset_end > (uintptr_t) *offset && *buf_size == num) {
+                Serial.println("http: buffer is too short");
+                return BERR_NOMEM;
             }
+
+            *buf += num;
+            *buf_size -= num;
+            content_length -= num;
         }
     }
 
