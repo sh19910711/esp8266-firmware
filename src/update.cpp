@@ -9,7 +9,6 @@
 
 
 static unsigned long current_deployment_id = 0;
-static unsigned long deployment_id_on_boot = 0;
 static struct firmware_info finfo;
 
 void do_update() {
@@ -68,15 +67,15 @@ send:
         goto retry;
     }
 
-    deployment_id_on_boot = atol((const char *) &buf);
-    if (deployment_id_on_boot == 0) {
+    current_deployment_id = atol((const char *) &buf);
+    if (current_deployment_id == 0) {
         Serial.println("firmware: server sent invalid heartbeat response");
         goto retry;
     }
 
     Serial.print("firmware: starting deplyoment id #");
-    Serial.println(deployment_id_on_boot);
-    update(deployment_id_on_boot);
+    Serial.println(current_deployment_id);
+    update(current_deployment_id);
 
 retry:
     Serial.println("firmware: retrying in few seconds...");
@@ -88,5 +87,5 @@ retry:
 
 unsigned long get_deployment_id_on_boot() {
 
-    return deployment_id_on_boot;
+    return current_deployment_id;
 }
