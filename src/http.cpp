@@ -14,16 +14,19 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         return BERR_NOMEM;
 
     Serial.print((tls) ? "https: " : "http: ");
-    if (offset) {
-        Serial.print(" offset=");
-        Serial.print(*offset);
-    }
     Serial.print(method);
     Serial.print(" ");
     Serial.print(host);
     Serial.print(":");
     Serial.print(port, DEC);
-    Serial.println(path);
+    Serial.print(path);
+
+    if (offset) {
+        Serial.print(" offset=");
+        Serial.print(*offset);
+    }
+
+    Serial.println("");
 
     WiFiClient *client;
     if (tls) {
