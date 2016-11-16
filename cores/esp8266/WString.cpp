@@ -490,6 +490,12 @@ unsigned char String::startsWith(const String &s2, unsigned int offset) const {
     return strncmp(&buffer[offset], s2.buffer, s2.len) == 0;
 }
 
+unsigned char String::startsWithIgnoreCase(const String &s2) const {
+  if (len < s2.len)
+    return 0;
+  return substring(0, s2.len).equalsIgnoreCase(s2);
+}
+
 unsigned char String::endsWith(const String &s2) const {
     if(len < s2.len || !buffer || !s2.buffer)
         return 0;
