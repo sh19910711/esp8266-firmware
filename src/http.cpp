@@ -79,7 +79,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         if (l.equals("\r"))
             break;
 
-        if (l.startsWith("Content-Length:")) {
+        if (l.startsWithIgnoreCase("Content-Length:")) {
             content_length = atol(l.c_str() + l.indexOf(' ') + 1);
         }
     }

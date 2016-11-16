@@ -196,6 +196,7 @@ class String {
         unsigned char equalsIgnoreCase(const String &s) const;
         unsigned char startsWith(const String &prefix) const;
         unsigned char startsWith(const String &prefix, unsigned int offset) const;
+        unsigned char startsWithIgnoreCase(const String &prefix) const;
         unsigned char endsWith(const String &suffix) const;
 
         // character acccess
