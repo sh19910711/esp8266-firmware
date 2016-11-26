@@ -24,7 +24,7 @@ void do_update() {
     finfo.http_request = http_request;
     finfo.get_device_secret = get_device_secret;
     finfo.get_server_url = get_server_url;
-    finfo.get_deployment_id = get_deployment;
+    finfo.get_deployment_id = get_deployment_id;
 
     ESP.wdtFeed();
 
@@ -60,6 +60,7 @@ send:
     char buf[64];
     memset(&buf, 0, sizeof(buf));
     http_request(SERVER_HOST, SERVER_PORT, "PUT", path.c_str(),
+
                  "", "", 0, &buf, sizeof(buf), SERVER_TLS);
 
     if (buf[0] == 'X') {
