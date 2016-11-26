@@ -24,7 +24,7 @@ void do_update() {
     finfo.http_request = http_request;
     finfo.get_device_secret = get_device_secret;
     finfo.get_server_url = get_server_url;
-    finfo.get_deployment_id_on_boot = get_deployment_id_on_boot;
+    finfo.get_deployment_id = get_deployment;
 
     ESP.wdtFeed();
 
@@ -85,7 +85,7 @@ retry:
 }
 
 
-unsigned long get_deployment_id_on_boot() {
+unsigned long get_deployment_id() {
 
     return current_deployment_id;
 }
