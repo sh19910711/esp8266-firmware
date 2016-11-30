@@ -29,6 +29,7 @@ void do_update() {
     finfo.accept_interrupt  = accept_interrupt;
     finfo.i2c_send          = i2c_send;
     finfo.i2c_receive       = i2c_receive;
+    finfo.millis            = millis;
 
     ESP.wdtFeed();
 
