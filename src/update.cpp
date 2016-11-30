@@ -19,6 +19,7 @@ void do_update() {
     finfo.dprint            = dprint;
     finfo.printchar         = printchar;
     finfo.read_adc          = read_adc;
+    finfo.analog_write      = analog_write;
     finfo.gpio_read         = gpio_read;
     finfo.gpio_write        = gpio_write;
     finfo.gpio_set_pin_mode = gpio_set_pin_mode;

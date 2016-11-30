@@ -7,6 +7,7 @@ void gpio_set_pin_mode(int pin, int mode);
 void dprint(const char *msg, unsigned x);
 void printchar(const char ch);
 int read_adc();
+void analog_write(int pin, int value);
 const char *get_device_secret();
 const char *get_server_url();
 

@@ -42,6 +42,12 @@ int read_adc() {
 }
 
 
+void analog_write(int pin, int value) {
+
+    analogWrite(pin, value);
+}
+
+
 const char *get_device_secret() {
 
     return DEVICE_SECRET;
