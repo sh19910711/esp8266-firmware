@@ -2,7 +2,6 @@
 #include <ESP8266WiFi.h>
 #include "update.h"
 #include "consts.h"
-#include "loop.h"
 #include "i2c.h"
 
 
@@ -42,10 +41,14 @@ extern "C" void boot() {
 
     Serial.println("firmware: Hello!");
 
+    // TODO: we don't need this, probably
+    Serial.println("firmware: activating IRAM from 0x40108000");
+    *((uint32_t *) 0x3ff00024) |= 0x10;
+
     Serial.println("firmware: initializing I2C...");
     i2c_init();
 
-    Serial.println("firmware: initializing SERVER_* constants");
+    Serial.println("firmware: initializing SERVER_* constants...");
     SERVER_TLS   = !(strcmp(SERVER_TLS_STR, "no") == 0);
     SERVER_PORT  = atoi(SERVER_PORT_STR);
     SERVER_URL  += (SERVER_TLS)? "https://" : "http://";
@@ -56,14 +59,12 @@ extern "C" void boot() {
     Serial.print("firmware: server is ");
     Serial.println(SERVER_URL);
 
-    // TODO: we don't need this, probably
-    Serial.println("firmware: activating IRAM from 0x40108000");
-    *((uint32_t *) 0x3ff00024) |= 0x10;
-
-    init_timers();
-
     connect_to_wifi();
 
-    Serial.println("firmware: downloading an app");
+    Serial.println("firmware: downloading an app...");
     send_first_heartbeat();
+}
+
+
+void loop() {
 }

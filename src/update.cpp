@@ -3,7 +3,6 @@
 #include "update.h"
 #include "reset_stack_and_goto.h"
 #include "elf.h"
-#include "loop.h"
 #include "consts.h"
 #include "interface.h"
 #include "interrupt.h"
@@ -14,9 +13,7 @@ static unsigned long current_deployment_id = 0;
 static struct firmware_info finfo;
 
 void do_update() {
-    finfo.start_loop        = start_loop;
     finfo.update            = update;
-    finfo.set_interval      = set_interval;
     finfo.dprint            = dprint;
     finfo.printchar         = printchar;
     finfo.read_adc          = read_adc;
