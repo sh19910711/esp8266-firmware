@@ -14,6 +14,7 @@ static struct firmware_info finfo;
 
 void do_update() {
     finfo.update            = update;
+    finfo.delay             = delay;
     finfo.dprint            = dprint;
     finfo.printchar         = printchar;
     finfo.read_adc          = read_adc;

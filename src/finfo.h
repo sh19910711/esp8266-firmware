@@ -11,6 +11,7 @@ enum {
 
 struct firmware_info {
     void (*update)(unsigned long deployment_id);
+    void (*delay)(unsigned long ms);
     void (*dprint)(const char *msg, unsigned x);
     void (*printchar)(const char ch);
     int (*read_adc)();
