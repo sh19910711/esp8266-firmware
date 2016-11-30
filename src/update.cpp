@@ -6,25 +6,27 @@
 #include "loop.h"
 #include "consts.h"
 #include "interface.h"
+#include "interrupt.h"
 
 
 static unsigned long current_deployment_id = 0;
 static struct firmware_info finfo;
 
 void do_update() {
-    finfo.start_loop   = start_loop;
-    finfo.update       = update;
-    finfo.set_interval = set_interval;
-    finfo.dprint       = dprint;
-    finfo.printchar    = printchar;
-    finfo.read_adc     = read_adc;
-    finfo.gpio_read    = gpio_read;
-    finfo.gpio_write    = gpio_write;
+    finfo.start_loop        = start_loop;
+    finfo.update            = update;
+    finfo.set_interval      = set_interval;
+    finfo.dprint            = dprint;
+    finfo.printchar         = printchar;
+    finfo.read_adc          = read_adc;
+    finfo.gpio_read         = gpio_read;
+    finfo.gpio_write        = gpio_write;
     finfo.gpio_set_pin_mode = gpio_set_pin_mode;
-    finfo.http_request = http_request;
+    finfo.http_request      = http_request;
     finfo.get_device_secret = get_device_secret;
-    finfo.get_server_url = get_server_url;
+    finfo.get_server_url    = get_server_url;
     finfo.get_deployment_id = get_deployment_id;
+    finfo.accept_interrupt  = accept_interrupt;
 
     ESP.wdtFeed();
 
