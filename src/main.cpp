@@ -3,6 +3,7 @@
 #include "update.h"
 #include "consts.h"
 #include "loop.h"
+#include "i2c.h"
 
 
 const char *SERVER_HOST     = "__VERY_VERY_LONG_SERVER_HOST_NAME__REPLACE_ME__";
@@ -15,11 +16,9 @@ int SERVER_PORT;
 bool SERVER_TLS;
 String SERVER_URL;
 
-extern "C" void boot() {
-    Serial.begin(115200);
-    Serial.println();
 
-    Serial.println("firmware: Hello!");
+static void connect_to_wifi() {
+
     Serial.print("firmware: connecting to ");
     Serial.println(WIFI_SSID);
 
@@ -34,6 +33,28 @@ extern "C" void boot() {
     Serial.println("firmware: connected");
     Serial.print("firmware: my IP address is ");
     Serial.println(WiFi.localIP());
+}
+
+
+extern "C" void boot() {
+    Serial.begin(115200);
+    Serial.println();
+
+    Serial.println("firmware: Hello!");
+
+    Serial.println("firmware: initializing I2C...");
+    i2c_init();
+
+    Serial.println("firmware: initializing SERVER_* constants");
+    SERVER_TLS   = !(strcmp(SERVER_TLS_STR, "no") == 0);
+    SERVER_PORT  = atoi(SERVER_PORT_STR);
+    SERVER_URL  += (SERVER_TLS)? "https://" : "http://";
+    SERVER_URL  += SERVER_HOST;
+    SERVER_URL  += ":";
+    SERVER_URL  += SERVER_PORT;
+
+    Serial.print("firmware: server is ");
+    Serial.println(SERVER_URL);
 
     // TODO: we don't need this, probably
     Serial.println("firmware: activating IRAM from 0x40108000");
@@ -41,15 +62,7 @@ extern "C" void boot() {
 
     init_timers();
 
-    SERVER_TLS  = !(strcmp(SERVER_TLS_STR, "no") == 0);
-    SERVER_PORT = atoi(SERVER_PORT_STR);
-     SERVER_URL += (SERVER_TLS)? "https://" : "http://";
-    SERVER_URL += SERVER_HOST;
-    SERVER_URL += ":";
-    SERVER_URL += SERVER_PORT;
-
-    Serial.print("firmware: server is ");
-    Serial.println(SERVER_URL);
+    connect_to_wifi();
 
     Serial.println("firmware: downloading an app");
     send_first_heartbeat();

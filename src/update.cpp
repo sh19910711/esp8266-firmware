@@ -7,6 +7,7 @@
 #include "consts.h"
 #include "interface.h"
 #include "interrupt.h"
+#include "i2c.h"
 
 
 static unsigned long current_deployment_id = 0;
@@ -28,6 +29,8 @@ void do_update() {
     finfo.get_server_url    = get_server_url;
     finfo.get_deployment_id = get_deployment_id;
     finfo.accept_interrupt  = accept_interrupt;
+    finfo.i2c_send          = i2c_send;
+    finfo.i2c_receive       = i2c_receive;
 
     ESP.wdtFeed();
 

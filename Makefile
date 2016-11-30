@@ -38,6 +38,7 @@ OBJS = \
     src/loop.cpp.o \
     src/update.cpp.o \
     src/interface.cpp.o \
+    src/i2c.cpp.o \
     src/interrupt.cpp.o \
     src/elf.cpp.o \
     src/aligned_memcpy.cpp.o \
