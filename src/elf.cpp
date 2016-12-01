@@ -20,8 +20,9 @@ uintptr_t load_elf(int deployment_id) {
 
     int offset = 0;
     while (offset < 0x70) { // XXX
-        do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
-                        "", "", 0, &data, &data_size, &offset, SERVER_TLS);
+        size_t resp_size;
+        do_http_request("GET", SERVER_HOST, SERVER_PORT, path.c_str(),
+                        "", 0, "", 0, &data, &data_size, &resp_size, &offset, SERVER_TLS);
     }
 
     data = (uint8_t *) 0x3fff7000; // XXX
@@ -76,12 +77,13 @@ uintptr_t load_elf(int deployment_id) {
                     return 0; // TODO: reset here
                 }
 
+                size_t resp_size;
                 size_t prev_offset = offset;
                 // data_size = data_max_size;
                 data = (uint8_t *) 0x3fff7000 + 1024;
                 data_size = 5000;
-                do_http_request(SERVER_HOST, SERVER_PORT, "GET", path.c_str(),
-                                "", "", 0, &data, &data_size, &offset,
+                do_http_request("GET", SERVER_HOST, SERVER_PORT, path.c_str(),
+                                "", 0, "", 0, &data, &data_size, &resp_size, &offset,
                                 SERVER_TLS);
 
                 data = (uint8_t *) 0x3fff7000 + 1024;

@@ -22,7 +22,7 @@ void do_update() {
     finfo.gpio_read         = gpio_read;
     finfo.gpio_write        = gpio_write;
     finfo.gpio_set_pin_mode = gpio_set_pin_mode;
-    finfo.http_request      = http_request;
+    finfo.http_request      = _http_request;
     finfo.get_device_secret = get_device_secret;
     finfo.get_server_url    = get_server_url;
     finfo.get_deployment_id = get_deployment_id;
@@ -58,15 +58,15 @@ void send_first_heartbeat() {
 send:
     ESP.wdtFeed();
 
-    String path("/api/devices/");
-    path.concat(DEVICE_SECRET);
-    path.concat("/heartbeat?status=ready");
+    String url(SERVER_URL);
+    url.concat("/api/devices/");
+    url.concat(DEVICE_SECRET);
+    url.concat("/heartbeat?status=ready");
 
+    size_t resp_size;
     char buf[64];
     memset(&buf, 0, sizeof(buf));
-    http_request(SERVER_HOST, SERVER_PORT, "PUT", path.c_str(),
-
-                 "", "", 0, &buf, sizeof(buf), SERVER_TLS);
+    http_request("PUT", url, "", "", 0, &buf, sizeof(buf), &resp_size);
 
     if (buf[0] == 'X') {
         Serial.println("firmware: no deployments");

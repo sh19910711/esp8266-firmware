@@ -5,13 +5,14 @@
 
 // TODO: refacoring
 
-ferr_t do_http_request(const char *host, int port, const char *method,
-                       const char *path, const void *headers, const void *payload,
-                       size_t payload_size, uint8_t **buf, size_t *buf_size,
-                       int *offset, bool tls) {
+int do_http_request(const char *method, const char *host, int port,
+                    const char *path, const void *headers, size_t headers_size,
+                    const void *payload, size_t payload_size,
+                    uint8_t **buf, size_t *buf_size, size_t *resp_size,
+                    int *offset, bool tls) {
 
     if (*buf_size == 0)
-        return BERR_NOMEM;
+        return 0;
 
     Serial.print((tls) ? "https: " : "http: ");
     Serial.print(method);
@@ -38,7 +39,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     ESP.wdtFeed();
     if (!client->connect(host, port)) {
         Serial.println("error: failed to connect");
-        return BERR_CONNECT;
+        return 0;
     }
 
     client->print(String(method) + " " + path + " HTTP/1.0\r\n" +
@@ -59,7 +60,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
     }
 
 
-    client->print((const char *) headers);
+    client->write((const char *) headers, headers_size);
     client->print("\r\n");
     client->write((const char *) payload, payload_size);
 
@@ -70,6 +71,7 @@ ferr_t do_http_request(const char *host, int port, const char *method,
 
     ESP.wdtFeed();
 
+    int status_code = 200; // TODO
     size_t content_length = 0;
     while (client->available() || client->connected()) {
         // connected
@@ -84,34 +86,111 @@ ferr_t do_http_request(const char *host, int port, const char *method,
         }
     }
 
-    while ((client->available() || client->connected()) && content_length > 0) {
-        size_t num;
-        while ((num = client->read(*buf, *buf_size)) > 0) {
-            *offset += num;
-            if (offset_end > (uintptr_t) *offset && *buf_size == num) {
-                Serial.println("http: buffer is too short");
-                return BERR_NOMEM;
-            }
+    *resp_size = 0;
+    if (*buf) {
+        while ((client->available() || client->connected()) && content_length > 0) {
+            size_t num;
+            while ((num = client->read(*buf, *buf_size)) > 0) {
+                *offset += num;
+                if (offset_end > (uintptr_t) *offset && *buf_size == num) {
+                    Serial.println("http: buffer is too short");
+                    return 0;
+                }
 
-            *buf += num;
-            *buf_size -= num;
-            content_length -= num;
+                *resp_size += num;
+                *buf += num;
+                *buf_size -= num;
+                content_length -= num;
+            }
         }
     }
 
     ESP.wdtFeed();
-    return BERR_OK;
+    return status_code;
 }
 
 
-ferr_t http_request(const char *host, int port, const char *method,
-                    const char *path, const void *headers, const void *payload,
-                    size_t payload_size, void *buf, size_t buf_size, bool tls) {
+int _http_request(const char *method, const char *url, size_t url_size,
+                  const void *headers, size_t headers_size,
+                  const void *payload, size_t payload_size,
+                  void *buf, size_t buf_size, size_t *resp_size) {
 
-    ferr_t r = do_http_request(host, port, method, path, headers,
-                               payload, payload_size,
-                              (uint8_t **) &buf, &buf_size,
-                               nullptr, tls);
+    int port;
+    bool tls;
+    const char *rest;
+    if (!strncmp(url, "http://", 7)) {
+        port = 80;
+        tls = false;
+        rest = url + 7;
+    } else if (!strncmp(url, "https://", 8)) {
+        port = 443;
+        tls  = true;
+        rest = url + 8;
+    } else {
+        Serial.println("http: unsupported scheme");
+        return 0;
+    }
 
-    return r;
+    String host;
+    while (url_size && *rest != ':' && *rest != '/') {
+        host += *rest;
+        rest++;
+        url_size--;
+    }
+
+    if (*rest == ':') {
+        String s;
+        rest++; // skip ':'
+        while (url_size && *rest != '/') {
+            s += *rest;
+            rest++;
+            url_size--;
+        }
+
+        port = atol(s.c_str());
+    }
+
+    while (url_size && *rest != ':' && *rest != '/') {
+        host += *rest;
+        rest++;
+        url_size--;
+    }
+
+    if (*rest == ':') {
+        String s;
+        rest++; // skip ':'
+        while (url_size && *rest != '/') {
+            s += *rest;
+            rest++;
+            url_size--;
+        }
+
+        port = atol(s.c_str());
+    }
+
+    String path;
+    while (url_size) {
+        path += *rest;
+        rest++;
+        url_size--;
+    }
+
+    if (path.length() == 0)
+        path += '/';
+
+    return do_http_request(method, host.c_str(), port, path.c_str(),
+                           headers, headers_size, payload, payload_size,
+                           (uint8_t **) &buf, &buf_size, resp_size,
+                           nullptr, tls);
+}
+
+
+int http_request(const char *method, String url, String headers,
+                 const void *payload, size_t payload_size,
+                 void *buf, size_t buf_size, size_t *resp_size) {
+
+    return _http_request(method, url.c_str(), url.length(),
+                         headers.c_str(), headers.length(),
+                         payload, payload_size,
+                         buf, buf_size, resp_size);
 }

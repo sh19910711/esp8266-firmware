@@ -3,12 +3,17 @@
 
 #include "finfo.h"
 
-ferr_t do_http_request(const char *host, int port, const char *method,
-                       const char *path, const void *headers, const void *payload,
-                       size_t payload_size, uint8_t **buf, size_t *buf_size,
-                       int *offset, bool tls);
-ferr_t http_request(const char *host, int port, const char *method,
-                    const char *path, const void *headers, const void *payload,
-                    size_t payload_size, void *buf, size_t buf_size, bool tls);
+int do_http_request(const char *method, const char *host, int port,
+                    const char *path, const void *headers, size_t headers_size,
+                    const void *payload, size_t payload_size,
+                    uint8_t **buf, size_t *buf_size, size_t *resp_size,
+                    int *offset, bool tls);
+int _http_request(const char *method, const char *url, size_t url_size,
+                  const void *headers, size_t headers_size,
+                  const void *payload, size_t payload_size,
+                  void *buf, size_t buf_size, size_t *resp_size);
+int http_request(const char *method, String url, String headers,
+                 const void *payload, size_t payload_size,
+                 void *buf, size_t buf_size, size_t *resp_size);
 
 #endif
