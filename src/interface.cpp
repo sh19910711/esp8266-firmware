@@ -59,3 +59,7 @@ const char *get_server_url() {
     return SERVER_URL.c_str();
 }
 
+int wifi_enable_eap_tls(const char *cert, const char *key) {
+
+    return wifi_station_set_cert_key((uint8 *)cert, sizeof(cert), (uint8 *)key, sizeof(key), NULL, 0);
+}

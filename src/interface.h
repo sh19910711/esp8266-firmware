@@ -10,5 +10,6 @@ int read_adc();
 void analog_write(int pin, int value);
 const char *get_device_secret();
 const char *get_server_url();
+int wifi_enable_eap_tls(const char *cert, const char *key);
 
 #endif
