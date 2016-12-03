@@ -4,7 +4,13 @@
 
 void i2c_init() {
 
-    twi_init(4 /* sda */, 5 /* scl */);
+    twi_init(SDA, SCL);
+}
+
+
+void i2c_init(int sda, int scl) {
+
+    twi_init(sda, scl);
 }
 
 
