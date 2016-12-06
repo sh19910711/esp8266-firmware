@@ -122,10 +122,12 @@ int _http_request(const char *method, const char *url, size_t url_size,
         port = 80;
         tls = false;
         rest = url + 7;
+        url_size -= 7;
     } else if (!strncmp(url, "https://", 8)) {
         port = 443;
         tls  = true;
         rest = url + 8;
+        url_size -= 8;
     } else {
         Serial.println("http: unsupported scheme");
         return 0;
@@ -140,7 +142,11 @@ int _http_request(const char *method, const char *url, size_t url_size,
 
     if (*rest == ':') {
         String s;
-        rest++; // skip ':'
+
+        // skip ':'
+        rest++;
+        url_size--;
+
         while (url_size && *rest != '/') {
             s += *rest;
             rest++;
