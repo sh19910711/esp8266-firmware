@@ -68,7 +68,6 @@ uintptr_t load_elf(int deployment_id) {
 
             offset = phdr->p_offset;
             data = (uint8_t *) 0x3fff7000 + 1024;
-            size_t data_max_size = 0x2000 - 1024;
             // TODO: limit # of http requests
             bool received_all = false;
             while (offset - phdr->p_offset < size) {
@@ -79,17 +78,18 @@ uintptr_t load_elf(int deployment_id) {
 
                 size_t resp_size;
                 size_t prev_offset = offset;
-                // data_size = data_max_size;
                 data = (uint8_t *) 0x3fff7000 + 1024;
-                data_size = 5000;
+                data_size = 4096;
                 do_http_request("GET", SERVER_HOST, SERVER_PORT, path.c_str(),
                                 "", 0, "", 0, &data, &data_size, &resp_size, &offset,
                                 SERVER_TLS);
+
 
                 data = (uint8_t *) 0x3fff7000 + 1024;
                 size_t copy_size = offset - prev_offset;
                 const int SPIFLASH_ADDR = 0x40200000;
                 const int SPIFLASH_SECTOR_SIZE = 4096;
+
                 if ((uintptr_t) dst >= SPIFLASH_ADDR) {
                     size_t sectors = copy_size / SPIFLASH_SECTOR_SIZE;
                     if (sectors == 0) {
@@ -110,7 +110,6 @@ uintptr_t load_elf(int deployment_id) {
                     }
 
                     ESP.wdtFeed();
-                    delay(500);
                     offset = prev_offset + sectors * SPIFLASH_SECTOR_SIZE;
                 } else {
                     aligned_memcpy(dst, data, copy_size);
